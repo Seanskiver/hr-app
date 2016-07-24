@@ -1,0 +1,22 @@
+{
+  "name": "hr-app",
+  "version": "1.0.0",
+  "description": "A human resources application built on a MEAN stack from the book JavaScript Development with MEAN",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Seanskiver/hr-app.git"
+  },
+  "author": "Sean Skiver",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Seanskiver/hr-app/issues"
+  },
+  "homepage": "https://github.com/Seanskiver/hr-app#readme",
+  "dependencies": {
+    "colors": "^1.1.2"
+  }
+}
