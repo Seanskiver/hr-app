@@ -1,21 +1,16 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var db = mongoose.connection;
-var dbUrl = 'mongodb://admin:admin@ds033096.mlab.com:33096/hr-app';
+var dbUrl = 'mongodb://admin:admin@ds033096.mlab.com:33096/hr-app'; 
 
-// Mongoose Team Schema
 var TeamSchema = new Schema({
   name: {
     type: String,
     required: true
   }
 });
-// Mongoose team model to match team schema
-// 'Team' is the nae of the model and TeamSchema is the schema
-// off of which this model is based
 var Team = mongoose.model('Team', TeamSchema);
 
-//Mongoose Employee Schema 
 var EmployeeSchema = new Schema({
   name: {
     first: {
@@ -28,7 +23,6 @@ var EmployeeSchema = new Schema({
     }
   },
   team: {
-    // Type of id because it references the team Id field 
     type: Schema.Types.ObjectId,
     ref: 'Team'
   },
@@ -46,23 +40,21 @@ var EmployeeSchema = new Schema({
   }
 });
 
-// Mongoose model to match Schema 
 var Employee = mongoose.model('Employee', EmployeeSchema);
 
-// IF DB ERROR 
+
 db.on('error', function () {
   console.log('there was an error communicating with the database');
 });
 
-// INSERT TEAMS
 function insertTeams (callback) {
-  Team.create([{
+  Team.create({
     name: 'Product Development'
   }, {
     name: 'Dev Ops'
   }, {
     name: 'Accounting'
-  }], function (error, pd, devops, acct) {
+  }, function (error, pd, devops, acct) {
     if (error) {
       return callback(error);
     } else {
@@ -72,24 +64,8 @@ function insertTeams (callback) {
   });
 }
 
-// RETRIEVE 1 EMPLOYEE
-function retrieveEmployee (data, callback) {
-  Employee.findOne({
-    _id: data.employee._id
-  }).populate('team').exec(function (error, result) {
-    if (error) {
-      return callback(error);
-    } else {
-      console.log('**** Single Employee result ****');
-      console.dir(result);
-      callback(null, data);
-    }
-  });
-}
-//Retrieve multiple employees
-// INSERT EMPLOYEES
 function insertEmployees (pd, devops, acct, callback) {
-  Employee.create([{
+  Employee.create({
     name: {
       first: 'John',
       last: 'Adams'
@@ -129,7 +105,7 @@ function insertEmployees (pd, devops, acct, callback) {
       lines: ['1850 West Basin Dr SW', 'Suite 210'],
       postal: '20242'
     }
-  }], function (error, johnadams) {
+  }, function (error, johnadams) {
     if (error) {
       return callback(error);
     } else {
@@ -141,8 +117,55 @@ function insertEmployees (pd, devops, acct, callback) {
     }
   })
 }
+// Get one employee
+function retrieveEmployee (data, callback) {
+  Employee.findOne({
+    _id: data.employee._id
+  }).populate('team').exec(function (error, result) {
+    if (error) {
+      return callback (error);
+    } else {
+      console.log('*** Single Employee Result ***');
+      console.log(result);
+      callback(null, data);
+    }
+  });
+}
 
-// Connection
+// get multiple employees
+function retrieveEmployees (data, callback)  {
+  Employee.find({
+    'name.first': /J/i
+  }, function (err, result) {
+    if (err) {
+      return callback(err);
+    } else {
+      console.log('*** Multiple Employee result ***');
+      console.log(result);
+      callback(null, data)
+    }
+  });
+}
+
+function updateEmployee (first, last, data, callback) {
+  console.log('*** Chaning names ***');
+  console.log(data.employee);
+  
+  var employee = data.employee;
+  employee.name.first = first;
+  employee.name.last = last;
+  
+  employee.save(function (error, result) {
+    if (error) {
+      console.error(error);
+    } else {
+      console.log('*** Changed name to ' + first + ' ' + last + '***');
+      console.log(result);
+      console.log(null, data);
+    }
+  });
+}
+
 mongoose.connect(dbUrl, function (err) {
   if (err) {
     return console.log('there was a problem connecting to the database!' + err);
@@ -154,14 +177,22 @@ mongoose.connect(dbUrl, function (err) {
       return console.log(err)
     }
     insertEmployees(pd, devops, acct, function (err, result) {
-      if (err) {
-        console.error('THERE WAS AN ERROR:  ' + err);
-      } else {
-        console.info('database activity complete');
-      }
-
-      db.close();
-      db.exit();
+      
+      retrieveEmployee(result, function (err, result) {
+        retrieveEmployees(result, function (err, result) {
+          if (err) {
+            console.error(err);
+          } else {
+            console.info('database activity complete')
+          }
+          
+          db.close()
+          process.exit();
+        });  
+      });
     });
   });
+  
+
+
 });
